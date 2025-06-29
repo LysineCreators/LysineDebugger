@@ -32,6 +32,27 @@ void netch(){    //logo表示とかバージョン云々
     CPrint("LDP Version      : " + LDP_version());
 }
 
+void send_int(){
+    std::string input_str;
+    std::cout << "Enter message to send: ";
+    std::cin >> input_str;
+
+    try {
+        int value = std::stoi(input_str);
+        send2Clientbysocket(value);
+        log_message("Sent int '" + input_str + "' to client.");
+        std::cout << "Sent int '" << input_str << "' to client." << std::endl;
+    } catch (const std::invalid_argument& e) {
+        send2Clientbysocket(input_str);
+        log_message("Sent string '" + input_str + "' to client.");
+        std::cout << "Sent string '" << input_str << "' to client." << std::endl;
+    } catch (const std::out_of_range& e) {
+        send2Clientbysocket(input_str);
+        log_message("Sent string (out of range) '" + input_str + "' to client.");
+        std::cout << "Sent string (out of range) '" << input_str << "' to client." << std::endl;
+    }
+}
+
 
 int main() {
     initialize_logger(); // ロガーを初期化
@@ -57,16 +78,12 @@ int main() {
                     log_message("[i]exit form LDP's command!");
                     break;
                 }else if(command == "help"){
-                    log_message("qsh: start,exit,help,hug,netch,send_text");
-                    std::cout << "qsh: start,exit,help,hug,netch,send_text" << std::endl; // コンソールにも出力
+                    log_message("qsh: start,exit,help,hug,netch,send");
+                    std::cout << "qsh: start,exit,help,hug,netch,send" << std::endl; // コンソールにも出力
                     log_message("qsh: OK");
                     std::cout << "qsh: OK" << std::endl; // コンソールにも出力
-                }else if(command == "send_text"){
-                    send2Clientbysocket("AVC");
-                    log_message("Sent 'AVC' to client.");
-                    std::cout << "Sent 'AVC' to client." << std::endl; // コンソールにも出力
-                }else if(command == "netch"){
-                    netch();
+                }else if(command == "send"){
+                    send_int();
                 }else {
                     log_message(command + " is unavabile command!");
                     std::cout << command + " is unavabile command!" << std::endl; // コンソールにも出力
