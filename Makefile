@@ -10,7 +10,7 @@ MAIN_SRC = main.cpp
 # Executable
 MAIN_EXEC = main.exe
 
-.PHONY: all clean
+.PHONY: all clean run
 
 # Default target
 all: $(MAIN_EXEC)
@@ -22,3 +22,8 @@ $(MAIN_EXEC): $(MAIN_SRC)
 # Rule to clean up generated files
 clean:
 	-del $(MAIN_EXEC) *.log 2>nul
+
+# Rule to run the executable
+run: all
+	@echo "Running $(MAIN_EXEC)..."
+	@$(MAIN_EXEC)

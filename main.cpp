@@ -3,20 +3,37 @@
 #include <chrono>
 #include <string>
 #include <ctime>
-#include <iomanip>
-#include <sstream>
+
 #include "init-support.cpp"
 
 using namespace std;
 std::string formatTime(int timestamp);
 
-
+std::string  LDP_version(){
+    return "1.0.0";
+}
 int main() {
+    //logo表示とかバージョン云々
     CPrint("");
-    cout << "Lysine Logger V1" << endl;
-    CPrint("Hello");
+    CPrint("################################################");
+    CPrint("   __       __  __    ______    __    ______ ___     ______               ");
+    CPrint("  /\\ \\     /\\ \\_\\ \\  /\\   __\\  /\\_\\  /\\  _  \\\\  \\  /\\  ____\\          ");
+    CPrint("  \\ \\ \\__  \\ \\____ \\ \\ \\____ \\ \\/\\ \\ \\ \\ \\\\  \\\\  \\ \\ \\  ____\\                        "); 
+    CPrint("   \\ \\____\\ \\/___/\\ \\ \\/\\_____\\ \\ \\ \\ \\ \\_\\\\______\\ \\ \\______\\                       ");
+    CPrint("    \\/____/      \\/_/  \\/_____/  \\/_/  \\/_/_______/  \\/______/                       ");
+    CPrint("");
+    CPrint("################################################");
+    CPrint("   Lysine");
+    CPrint("   Debugger");
+    CPrint("   Pro");
+    CPrint("   Created by CloverTech1105");
+    CPrint("##################[Build date]##################");
     PrintFileTimes(GetOwnExecutablePath());
-
+    CPrint("################[Module version]################");
+    CPrint("init_kit Version : " + init_support_ver());
+    CPrint("LDP Version      : " + LDP_version());
+    CPrint("[]");
+    CPrint("WebSoket ");
     int timestamp = static_cast<int>(std::time(nullptr));  // 現在の時刻を取得
     std::string formattedTime = formatTime(timestamp);
 
@@ -34,25 +51,3 @@ int main() {
     return 0;
 }
 
-std::string formatTime(int timestamp) {
-    // time_t に変換
-    std::time_t rawTime = static_cast<std::time_t>(timestamp);
-    std::tm* timeinfo = std::localtime(&rawTime);
-
-    // AM or PM 判定
-    std::string am_pm = (timeinfo->tm_hour < 12) ? "AM" : "PM";
-
-    // 12時間形式の時間
-    int hour12 = timeinfo->tm_hour % 12;
-    if (hour12 == 0) hour12 = 12;  // 0時 or 12時の場合に対応
-
-    // 文字列に変換
-    std::ostringstream oss;
-    oss << std::put_time(timeinfo, "%Y-%m-%d-")  // 日付
-        << am_pm << '-'                          // AM/PM
-        << std::setw(2) << std::setfill('0') << hour12 << '-'  // hh
-        << std::setw(2) << std::setfill('0') << timeinfo->tm_min << '-'  // mm
-        << std::setw(2) << std::setfill('0') << timeinfo->tm_sec;        // ss
-
-    return oss.str();
-}
