@@ -1,5 +1,5 @@
 # LysineDebugger
-<p>Lysine用のデバッガです</br>Lysine内にデバッガー起動用コードがあるかつ、Lysineの実行フォルダー内にないと起動しません</p>
+<p>Lysine用のデバッガです</br>WebSocketで通信します！</p>
 <h1>機能</h1>
 <p>今のところはLysineに直接書かれていたデバッグログがここに表示される以外はありません</p>
 <h1>ビルド</h1>
