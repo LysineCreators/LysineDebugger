@@ -5,15 +5,17 @@
 #include <ctime>
 #include <iomanip>
 #include <sstream>
-
+#include "init-support.cpp"
 
 using namespace std;
 std::string formatTime(int timestamp);
 
 
 int main() {
-    
+    CPrint("");
     cout << "Lysine Logger V1" << endl;
+    CPrint("Hello");
+    PrintFileTimes(GetOwnExecutablePath());
 
     int timestamp = static_cast<int>(std::time(nullptr));  // 現在の時刻を取得
     std::string formattedTime = formatTime(timestamp);
