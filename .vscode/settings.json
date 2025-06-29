@@ -62,7 +62,9 @@
         "functional": "cpp",
         "list": "cpp",
         "unordered_map": "cpp",
-        "xhash": "cpp"
+        "xhash": "cpp",
+        "algorithm": "cpp",
+        "mutex": "cpp"
     },
     "makefile.configureOnOpen": false,
     "C_Cpp.errorSquiggles": "disabled"

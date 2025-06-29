@@ -8,6 +8,11 @@
 #include <string>                    // 文字列クラス (std::string)
 #include <thread>                    // スレッド機能 (std::thread)
 #include <vector>                    // 動的配列 (std::vector)
+#include <mutex>                     // ミューテックス (std::mutex, std::lock_guard)
+#include <memory>                    // スマートポインタ (std::shared_ptr)
+#include <algorithm>                 // std::remove_if
+#include <functional>                // std::ref
+#include "./../logging/logger.h"
 
 // Boost.Beast の名前空間エイリアス
 namespace beast = boost::beast;
@@ -29,15 +34,91 @@ void fail(beast::error_code ec, char const* what)
 // 個々のWebSocketセッションを処理する関数
 // クライアントからの接続を受け付け、メッセージをエコーバックする
 // socket: クライアントとの通信に使用するTCPソケット (値渡しで所有権を移動)
-void do_session(tcp::socket socket)
+
+// WebSocketセッションを管理するクラス
+class session_manager
 {
+    // クライアントのWebSocketセッションを保持するベクター
+    std::vector<std::shared_ptr<websocket::stream<tcp::socket>>> sessions_;
+    // セッションへのアクセスを同期するためのミューテックス
+    std::mutex mutex_;
+
+public:
+    // セッションを追加
+    void add_session(std::shared_ptr<websocket::stream<tcp::socket>> ws)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        sessions_.push_back(ws);
+        std::cout << "\n";
+        log_message("[i]Session added. Total sessions: " + std::to_string(sessions_.size()));
+        std::cout <<  "[i]Session added. Total sessions: " << sessions_.size() << std::endl;
+        
+        
+    }
+
+    // セッションを削除
+    void remove_session(std::shared_ptr<websocket::stream<tcp::socket>> ws)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        sessions_.erase(std::remove_if(sessions_.begin(), sessions_.end(),
+                                       [&](std::shared_ptr<websocket::stream<tcp::socket>> s) {
+                                           return s == ws;
+                                       }),
+                        sessions_.end());
+        std::cout << "\n";
+        log_message("[i]Session removed. Total sessions: " + std::to_string(sessions_.size()));
+        std::cout << "[i]Session removed. Total sessions: " << sessions_.size() << std::endl;
+        
+    }
+
+    // 全てのクライアントにメッセージを送信
+    void send_to_all(const std::string& message)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        for (auto& ws : sessions_)
+        {
+            try
+            {
+                ws->write(net::buffer(message));
+            }
+            catch (const beast::system_error& se)
+            {
+                if (se.code() == websocket::error::closed)
+                {
+                    std::cerr << "Client disconnected during send: " << se.what() << std::endl;
+                }
+                else
+                {
+                    std::cerr << "Error sending message: " << se.what() << std::endl;
+                }
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << "Error sending message: " << e.what() << std::endl;
+            }
+        }
+    }
+};
+
+// 個々のWebSocketセッションを処理する関数
+// クライアントからの接続を受け付け、メッセージをエコーバックする
+// socket: クライアントとの通信に使用するTCPソケット (値渡しで所有権を移動)
+// manager: セッションマネージャーへの参照
+void do_session(tcp::socket socket, session_manager& manager)
+{
+    // ws の宣言を try ブロックの外に移動
+    std::shared_ptr<websocket::stream<tcp::socket>> ws; // ここで宣言
+
     try
     {
         // WebSocketストリームを作成し、ソケットを移動して関連付ける
-        websocket::stream<tcp::socket> ws{std::move(socket)};
+        ws = std::make_shared<websocket::stream<tcp::socket>>(std::move(socket)); // ここで初期化
         
         // WebSocketハンドシェイクを受け付ける
-        ws.accept();
+        ws->accept();
+
+        // セッションマネージャーにセッションを追加
+        manager.add_session(ws);
 
         // 無限ループでメッセージの読み書きを行う
         for(;;)
@@ -46,32 +127,16 @@ void do_session(tcp::socket socket)
            
              beast::flat_buffer buffer;
             // クライアントからメッセージを読み込む
-            ws.read(buffer);
+            ws->read(buffer);
+            // 受信したメッセージをログに出力
+            std::cout << "\n";
+            std::cout << "Received from client: " << beast::buffers_to_string(buffer.data()) << std::endl;
+            log_message("[Client]" + beast::buffers_to_string(buffer.data()) );
             
             // 受信したメッセージがテキスト形式であれば、送信もテキスト形式で行う
-            ws.text(ws.got_text());
+            ws->text(ws->got_text());
             
             // 受信したメッセージをそのままクライアントにエコーバックする
-            ws.write(buffer.data());
-
-            
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             
         }
@@ -88,12 +153,28 @@ void do_session(tcp::socket socket)
     {
         std::cerr << "Error in session: " << e.what() << std::endl;
     }
+    // セッション終了時にセッションマネージャーから削除
+    manager.remove_session(ws);
+}
+
+// グローバルなセッションマネージャーインスタンス
+session_manager g_session_manager;
+
+// クライアントにメッセージを送信する関数
+void send2Clientbysocket(const std::string& message)
+{
+    g_session_manager.send_to_all(message);
+}
+
+void send2Clientbysocket(int value)
+{
+    g_session_manager.send_to_all(std::to_string(value));
 }
 
 // WebSocketサーバーのメインロジック
 // クライアントからの接続を待ち受け、新しいセッションを生成する
 // ioc: Boost.Asio のI/Oコンテキスト
-void server_logic(net::io_context& ioc)
+void server_logic(net::io_context& ioc, session_manager& manager)
 {
     try
     {
@@ -117,7 +198,7 @@ void server_logic(net::io_context& ioc)
             
             // 新しいスレッドでWebSocketセッションを処理し、スレッドをデタッチする
             // デタッチすることで、メインスレッドがセッションスレッドの終了を待たずに続行できる
-            std::thread(&do_session, std::move(socket)).detach();
+            std::thread(&do_session, std::move(socket), std::ref(manager)).detach();
         }
     }
     // 標準例外をキャッチし、エラー情報を出力
@@ -147,7 +228,7 @@ void start_server()
     if (!server_thread.joinable()) {
         // ラムダ式を使用して、サーバーロジックとioc.run()を新しいスレッドで実行
         server_thread = std::thread([&]() {
-            server_logic(ioc); // サーバーの接続待ち受けロジック
+            server_logic(ioc, g_session_manager); // サーバーの接続待ち受けロジック
             ioc.run();         // I/O操作を実行
         });
         std::cout << "Server started." << std::endl;

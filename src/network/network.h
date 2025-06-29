@@ -14,4 +14,6 @@ extern std::thread server_thread;
 void start_server();
 void stop_server();
 int send2Client();
+void send2Clientbysocket(int value);
+void send2Clientbysocket(const std::string& message);
 #endif // NETWORK_H

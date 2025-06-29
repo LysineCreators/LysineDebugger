@@ -14,7 +14,7 @@ CXX = g++
 TARGET = LDP.exe
 
 # Source files
-SRCS = main.cpp src/network/network.cpp
+SRCS = main.cpp src/network/network.cpp src/logging/logger.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)
@@ -49,7 +49,7 @@ $(TARGET): $(OBJS)
 
 # Rule to clean up built files
 clean:
-	del "$(TARGET)" "main.o" "src\network\network.o" "*.log"
+	del "$(TARGET)" "main.o" "src\network\network.o" "src\logging\logger.o" "*.log"
 
 # Rule to run the executable
 run: all
