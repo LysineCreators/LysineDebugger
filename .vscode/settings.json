@@ -58,7 +58,11 @@
         "sstream": "cpp",
         "vector": "cpp",
         "stop_token": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "functional": "cpp",
+        "list": "cpp",
+        "unordered_map": "cpp",
+        "xhash": "cpp"
     },
     "makefile.configureOnOpen": false,
     "C_Cpp.errorSquiggles": "disabled"

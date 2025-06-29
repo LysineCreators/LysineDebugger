@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Client</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #messages { border: 1px solid #ccc; padding: 10px; min-height: 200px; overflow-y: scroll; margin-bottom: 10px; }
+        input[type="text"] { width: 80%; padding: 8px; }
+        button { padding: 8px 15px; }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Client</h1>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="メッセージを入力...">
+    <button onclick="sendMessage()">送信</button>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        let ws;
+
+        function connectWebSocket() {
+            // WebSocketサーバーのアドレス。サーバーが8080ポートで動作していることを想定
+            ws = new WebSocket('ws://localhost:8080');
+
+            ws.onopen = function() {
+                appendMessage('接続済み', 'system');
+                console.log('WebSocket connected');
+            };
+
+            ws.onmessage = function(event) {
+                appendMessage('サーバー: ' + event.data, 'server');
+                console.log('Message from server: ' + event.data);
+            };
+
+            ws.onerror = function(error) {
+                appendMessage('エラー: ' + error.message, 'error');
+                console.error('WebSocket Error: ' + error);
+            };
+
+            ws.onclose = function() {
+                appendMessage('接続切断', 'system');
+                console.log('WebSocket disconnected');
+                // 接続が切断された場合、再接続を試みる
+                setTimeout(connectWebSocket, 3000); // 3秒後に再接続
+            };
+        }
+
+        function sendMessage() {
+            const message = messageInput.value;
+            if (ws && ws.readyState === WebSocket.OPEN && message) {
+                ws.send(message);
+                appendMessage('あなた: ' + message, 'client');
+                messageInput.value = ''; // 入力フィールドをクリア
+            } else if (ws.readyState !== WebSocket.OPEN) {
+                appendMessage('エラー: サーバーに接続されていません。', 'error');
+            }
+        }
+
+        function appendMessage(message, type) {
+            const p = document.createElement('p');
+            p.textContent = message;
+            if (type === 'system') {
+                p.style.color = 'blue';
+            } else if (type === 'server') {
+                p.style.color = 'green';
+            } else if (type === 'client') {
+                p.style.color = 'purple';
+            } else if (type === 'error') {
+                p.style.color = 'red';
+            }
+            messagesDiv.appendChild(p);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // スクロールを一番下へ
+        }
+
+        // ページロード時にWebSocket接続を開始
+        window.onload = connectWebSocket;
+    </script>
+</body>
+</html>
