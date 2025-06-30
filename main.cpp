@@ -84,7 +84,12 @@ int main() {
                     std::cout << "qsh: OK" << std::endl; // コンソールにも出力
                 }else if(command == "send"){
                     send_int();
-                }else {
+                }else if(command == "netch"){
+                    log_message("netch");
+                    netch();
+                    log_message("qsh: OK");
+                    std::cout << "qsh: OK" << std::endl; // コンソールにも出力
+                }else{
                     log_message(command + " is unavabile command!");
                     std::cout << command + " is unavabile command!" << std::endl; // コンソールにも出力
                 }
