@@ -26,13 +26,13 @@ jobs:
     - name: Install Boost (Asio + System)
       run: .\vcpkg\vcpkg.exe install boost-asio boost-system --triplet x64-windows
 
-    - name: Set environment for compiler to find vcpkg headers/libs
+    - name: Workaround: Create fake local vcpkg path
       shell: pwsh
       run: |
-        $vcpkgPath = "${{ github.workspace }}\vcpkg\installed\x64-windows"
-        echo "INCLUDE=$vcpkgPath\include;$env:INCLUDE" >> $env:GITHUB_ENV
-        echo "LIB=$vcpkgPath\lib;$env:LIB" >> $env:GITHUB_ENV
-        echo "PATH=$vcpkgPath\bin;$env:PATH" >> $env:GITHUB_ENV
+        $src = "${{ github.workspace }}\vcpkg\installed\x64-windows"
+        $fake = "C:\Users\CT1105\vcpkg\installed\x64-windows"
+        New-Item -ItemType Directory -Path "C:\Users\CT1105\vcpkg\installed" -Force | Out-Null
+        cmd /c mklink /D "$fake" "$src"
 
     - name: Build with make
       run: make
