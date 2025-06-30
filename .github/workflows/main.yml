@@ -11,11 +11,11 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-    - name: Install Chocolatey dependencies
-      run: |
-        choco install -y make curl git
+    - name: Install tools (make, curl, git)
+      run: choco install -y make curl git
 
     - name: Clone vcpkg
       run: git clone https://github.com/microsoft/vcpkg.git
@@ -23,13 +23,16 @@ jobs:
     - name: Bootstrap vcpkg
       run: .\vcpkg\bootstrap-vcpkg.bat
 
-    - name: Install WebSocket dependencies
-      run: .\vcpkg\vcpkg.exe install boost-beast boost-asio boost-system --triplet x64-windows
-  
-    - name: Add vcpkg to environment
-      run: |
-        echo "VCPKG_ROOT=${{ github.workspace }}\vcpkg" >> $env:GITHUB_ENV
-        echo "PATH=${{ github.workspace }}\vcpkg;$env:PATH" >> $env:GITHUB_ENV
+    - name: Install Boost (Asio + System)
+      run: .\vcpkg\vcpkg.exe install boost-asio boost-system --triplet x64-windows
 
-    - name: make
+    - name: Set environment for compiler to find vcpkg headers/libs
+      shell: pwsh
+      run: |
+        $vcpkgPath = "${{ github.workspace }}\vcpkg\installed\x64-windows"
+        echo "INCLUDE=$vcpkgPath\include;$env:INCLUDE" >> $env:GITHUB_ENV
+        echo "LIB=$vcpkgPath\lib;$env:LIB" >> $env:GITHUB_ENV
+        echo "PATH=$vcpkgPath\bin;$env:PATH" >> $env:GITHUB_ENV
+
+    - name: Build with make
       run: make
