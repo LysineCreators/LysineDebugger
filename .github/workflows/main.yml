@@ -26,7 +26,7 @@ jobs:
     - name: Install Boost (Asio + System)
       run: .\vcpkg\vcpkg.exe install boost-asio boost-system --triplet x64-windows
 
-    - name: Workaround: Create fake local vcpkg path
+    - name: Workaround Create fake local vcpkg path
       shell: pwsh
       run: |
         $src = "${{ github.workspace }}/vcpkg/installed/x64-windows"
