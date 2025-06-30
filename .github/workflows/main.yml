@@ -24,8 +24,8 @@ jobs:
       run: .\vcpkg\bootstrap-vcpkg.bat
 
     - name: Install WebSocket dependencies
-      run: .\vcpkg\vcpkg.exe install websocketpp --triplet x64-windows
-
+      run: .\vcpkg\vcpkg.exe install websocketpp boost-asio boost-system --triplet x64-windows
+  
     - name: Add vcpkg to environment
       run: |
         echo "VCPKG_ROOT=${{ github.workspace }}\vcpkg" >> $env:GITHUB_ENV
