@@ -29,9 +29,9 @@ jobs:
     - name: Workaround: Create fake local vcpkg path
       shell: pwsh
       run: |
-        $src = "${{ github.workspace }}\vcpkg\installed\x64-windows"
-        $fake = "C:\Users\CT1105\vcpkg\installed\x64-windows"
-        New-Item -ItemType Directory -Path "C:\Users\CT1105\vcpkg\installed" -Force | Out-Null
+        $src = "${{ github.workspace }}/vcpkg/installed/x64-windows"
+        $fake = "C:/Users/CT1105/vcpkg/installed/x64-windows"
+        New-Item -ItemType Directory -Path "C:/Users/CT1105/vcpkg/installed" -Force | Out-Null
         cmd /c mklink /D "$fake" "$src"
 
     - name: Build with make
