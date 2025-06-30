@@ -1,0 +1,35 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Chocolatey dependencies
+      run: |
+        choco install -y make curl git
+
+    - name: Clone vcpkg
+      run: git clone https://github.com/microsoft/vcpkg.git
+
+    - name: Bootstrap vcpkg
+      run: .\vcpkg\bootstrap-vcpkg.bat
+
+    - name: Install WebSocket dependencies
+      run: .\vcpkg\vcpkg.exe install websocketpp --triplet x64-windows
+
+    - name: Add vcpkg to environment
+      run: |
+        echo "VCPKG_ROOT=${{ github.workspace }}\vcpkg" >> $env:GITHUB_ENV
+        echo "PATH=${{ github.workspace }}\vcpkg;$env:PATH" >> $env:GITHUB_ENV
+
+    - name: make
+      run: make
