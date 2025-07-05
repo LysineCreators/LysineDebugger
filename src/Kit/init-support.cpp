@@ -1,8 +1,9 @@
-#include <windows.h>
+#include "init-support.h"
 #include <iostream>
 #include <string>
 #include <iomanip>
 #include <sstream>
+
 using namespace std;
 // convert int to String
 std::string FileTimeToString(const FILETIME& ft) {
@@ -76,6 +77,9 @@ std::string formatTime(int timestamp) {
 
     return oss.str();
 }
+
+
 std::string init_support_ver(){ 
     return "1.0.0";
 }
+

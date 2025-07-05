@@ -14,7 +14,7 @@ CXX = g++
 TARGET = LDP.exe
 
 # Source files
-SRCS = main.cpp src/network/network.cpp src/logging/logger.cpp
+SRCS = ./src/main/main.cpp src/network/network.cpp src/logging/logger.cpp src/Kit/init-support.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)
@@ -30,7 +30,7 @@ CXXFLAGS = -std=c++17 -Wall -DWIN32_LEAN_AND_MEAN -D_WIN32_WINNT=0x0601 -I"$(BOO
 LDFLAGS = -L"$(BOOST_PATH)/lib"
 
 # Libraries to link
-LIBS = -lboost_system-vc143-mt-x64-1_88 -lpthread -lws2_32
+LIBS = -lboost_system-vc143-mt-x64-1_88 -lpthread -lws2_32 -lstdc++fs
 
 # --- Build Rules ---
 
@@ -49,7 +49,7 @@ $(TARGET): $(OBJS)
 
 # Rule to clean up built files
 clean:
-	del "$(TARGET)" "main.o" "src\network\network.o" "src\logging\logger.o" "*.log"
+	del "$(TARGET)" ".\src\main\main.o" "src\network\network.o" "src\logging\logger.o" "log*.log" "src\Kit\init-support.o"
 
 # Rule to run the executable
 run: all
