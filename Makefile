@@ -19,6 +19,10 @@ SRCS = ./src/main/main.cpp src/network/network.cpp src/logging/logger.cpp src/Ki
 # Object files
 OBJS = $(SRCS:.cpp=.o)
 
+# Resource file
+RC = windres
+RES = app.res
+
 # Compiler flags
 # -std=c++17: Use C++17 standard (Beast requires at least C++11, 17 is recommended)
 # -Wall: Enable all warnings
@@ -40,16 +44,20 @@ LIBS = -lboost_system-vc143-mt-x64-1_88 -lpthread -lws2_32 -lstdc++fs
 all: $(TARGET)
 
 # Rule to link the executable
-$(TARGET): $(OBJS)
-	$(CXX) $(LDFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
+$(TARGET): $(OBJS) $(RES)
+	$(CXX) $(LDFLAGS) -o $(TARGET) $(OBJS) $(RES) $(LIBS)
 
 # Rule to compile source files into object files
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Rule to compile resource file
+$(RES): app.rc
+	$(RC) app.rc -O coff -o $@
+
 # Rule to clean up built files
 clean:
-	del "$(TARGET)" ".\src\main\main.o" "src\network\network.o" "src\logging\logger.o" "log*.log" "src\Kit\init-support.o"
+	del "$(TARGET)" ".\src\main\main.o" "src\network\network.o" "src\logging\logger.o" "src\Kit\init-support.o" "log*.log" "$(RES)"
 
 # Rule to run the executable
 run: all
